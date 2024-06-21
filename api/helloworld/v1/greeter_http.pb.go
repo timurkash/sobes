@@ -19,42 +19,96 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
-const OperationGreeterSayHello = "/helloworld.v1.Greeter/SayHello"
+const OperationGreeterCreateRoute = "/helloworld.v1.Greeter/CreateRoute"
+const OperationGreeterDeleteRoute = "/helloworld.v1.Greeter/DeleteRoute"
+const OperationGreeterGetRoute = "/helloworld.v1.Greeter/GetRoute"
 
 type GreeterHTTPServer interface {
-	// SayHello Sends a greeting
-	SayHello(context.Context, *HelloRequest) (*HelloReply, error)
+	CreateRoute(context.Context, *CreateRouteRequest) (*CreateRouteReply, error)
+	DeleteRoute(context.Context, *DeleteRouteRequest) (*Empty, error)
+	GetRoute(context.Context, *GetRouteRequest) (*RouteReply, error)
 }
 
 func RegisterGreeterHTTPServer(s *http.Server, srv GreeterHTTPServer) {
 	r := s.Route("/")
-	r.GET("/helloworld/{name}", _Greeter_SayHello0_HTTP_Handler(srv))
+	r.POST("/route/register", _Greeter_CreateRoute0_HTTP_Handler(srv))
+	r.GET("/route/{route_id}", _Greeter_GetRoute0_HTTP_Handler(srv))
+	r.DELETE("/route/{route_id}", _Greeter_DeleteRoute0_HTTP_Handler(srv))
 }
 
-func _Greeter_SayHello0_HTTP_Handler(srv GreeterHTTPServer) func(ctx http.Context) error {
+func _Greeter_CreateRoute0_HTTP_Handler(srv GreeterHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in HelloRequest
+		var in CreateRouteRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationGreeterCreateRoute)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.CreateRoute(ctx, req.(*CreateRouteRequest))
+		})
+		out, err := h(ctx, &in)
+		reply := out.(*CreateRouteReply)
+		if err != nil {
+			if reply.AlreadyExists {
+				return ctx.Result(208, reply)
+			}
+			return err
+		}
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Greeter_GetRoute0_HTTP_Handler(srv GreeterHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GetRouteRequest
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
 		if err := ctx.BindVars(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, OperationGreeterSayHello)
+		http.SetOperation(ctx, OperationGreeterGetRoute)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.SayHello(ctx, req.(*HelloRequest))
+			return srv.GetRoute(ctx, req.(*GetRouteRequest))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
 			return err
 		}
-		reply := out.(*HelloReply)
+		reply := out.(*RouteReply)
 		return ctx.Result(200, reply)
 	}
 }
 
+func _Greeter_DeleteRoute0_HTTP_Handler(srv GreeterHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in DeleteRouteRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationGreeterDeleteRoute)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.DeleteRoute(ctx, req.(*DeleteRouteRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*Empty)
+		return ctx.Result(202, reply)
+	}
+}
+
 type GreeterHTTPClient interface {
-	SayHello(ctx context.Context, req *HelloRequest, opts ...http.CallOption) (rsp *HelloReply, err error)
+	CreateRoute(ctx context.Context, req *CreateRouteRequest, opts ...http.CallOption) (rsp *CreateRouteReply, err error)
+	DeleteRoute(ctx context.Context, req *DeleteRouteRequest, opts ...http.CallOption) (rsp *Empty, err error)
+	GetRoute(ctx context.Context, req *GetRouteRequest, opts ...http.CallOption) (rsp *RouteReply, err error)
 }
 
 type GreeterHTTPClientImpl struct {
@@ -65,11 +119,37 @@ func NewGreeterHTTPClient(client *http.Client) GreeterHTTPClient {
 	return &GreeterHTTPClientImpl{client}
 }
 
-func (c *GreeterHTTPClientImpl) SayHello(ctx context.Context, in *HelloRequest, opts ...http.CallOption) (*HelloReply, error) {
-	var out HelloReply
-	pattern := "/helloworld/{name}"
+func (c *GreeterHTTPClientImpl) CreateRoute(ctx context.Context, in *CreateRouteRequest, opts ...http.CallOption) (*CreateRouteReply, error) {
+	var out CreateRouteReply
+	pattern := "/route/register"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationGreeterCreateRoute))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *GreeterHTTPClientImpl) DeleteRoute(ctx context.Context, in *DeleteRouteRequest, opts ...http.CallOption) (*Empty, error) {
+	var out Empty
+	pattern := "/route/{route_id}"
 	path := binding.EncodeURL(pattern, in, true)
-	opts = append(opts, http.Operation(OperationGreeterSayHello))
+	opts = append(opts, http.Operation(OperationGreeterDeleteRoute))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *GreeterHTTPClientImpl) GetRoute(ctx context.Context, in *GetRouteRequest, opts ...http.CallOption) (*RouteReply, error) {
+	var out RouteReply
+	pattern := "/route/{route_id}"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationGreeterGetRoute))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {

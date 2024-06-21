@@ -12,13 +12,15 @@ var ProviderSet = wire.NewSet(NewData, NewGreeterRepo)
 
 // Data .
 type Data struct {
-	// TODO wrapped database client
+	log *log.Helper
 }
 
 // NewData .
-func NewData(c *conf.Data, logger log.Logger) (*Data, func(), error) {
-	cleanup := func() {
-		log.NewHelper(logger).Info("closing the data resources")
+func NewData(confData *conf.Data, logger log.Logger) (*Data, error) {
+	if confData == nil {
+		return nil, GetBadConfigError("data")
 	}
-	return &Data{}, cleanup, nil
+	return &Data{
+		log: log.NewHelper(logger),
+	}, nil
 }

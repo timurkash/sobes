@@ -4,35 +4,105 @@
 openapi: 3.0.3
 info:
     title: Greeter API
-    description: The greeting service definition.
     version: 0.0.1
 paths:
-    /helloworld/{name}:
-        get:
+    /route/register:
+        post:
             tags:
                 - Greeter
-            description: Sends a greeting
-            operationId: Greeter_SayHello
-            parameters:
-                - name: name
-                  in: path
-                  required: true
-                  schema:
-                    type: string
+            operationId: Greeter_CreateRoute
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/helloworld.v1.CreateRouteRequest'
+                required: true
             responses:
                 "200":
                     description: OK
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/helloworld.v1.HelloReply'
+                                $ref: '#/components/schemas/helloworld.v1.CreateRouteReply'
+    /route/{routeId}:
+        get:
+            tags:
+                - Greeter
+            operationId: Greeter_GetRoute
+            parameters:
+                - name: routeId
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/helloworld.v1.RouteReply'
+        delete:
+            tags:
+                - Greeter
+            operationId: Greeter_DeleteRoute
+            parameters:
+                - name: routeId
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/helloworld.v1.Empty'
 components:
     schemas:
-        helloworld.v1.HelloReply:
+        helloworld.v1.CreateRouteReply:
             type: object
             properties:
-                message:
+                routeId:
+                    type: integer
+                    format: uint64
+                routeName:
                     type: string
-            description: The response message containing the greetings
+                load:
+                    type: number
+                    format: double
+                cargoType:
+                    type: string
+                alreadyExists:
+                    type: boolean
+        helloworld.v1.CreateRouteRequest:
+            type: object
+            properties:
+                routeId:
+                    type: integer
+                    format: uint64
+                routeName:
+                    type: string
+                load:
+                    type: number
+                    format: double
+                cargoType:
+                    type: string
+        helloworld.v1.Empty:
+            type: object
+            properties: {}
+        helloworld.v1.RouteReply:
+            type: object
+            properties:
+                routeName:
+                    type: string
+                load:
+                    type: number
+                    format: double
+                cargoType:
+                    type: string
 tags:
     - name: Greeter
