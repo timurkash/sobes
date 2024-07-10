@@ -2,11 +2,13 @@ package biz
 
 import (
 	"context"
+	"crypto/md5"
+	"encoding/hex"
 	"github.com/google/wire"
-	"helloworld/internal/data/ent"
-	"math/rand"
-
+	"google.golang.org/grpc/metadata"
 	v1 "helloworld/api/helloworld/v1"
+	"helloworld/internal/data/ent"
+	"strings"
 
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
@@ -16,25 +18,19 @@ import (
 var ProviderSet = wire.NewSet(NewGreeterUsecase)
 
 var (
-	ErrRouteAlreadyExists = errors.New(208, v1.ErrorReason_ROUTE_ALREADY_EXISTS.String(), "")
-	ErrRouteNotActual     = errors.New(410, v1.ErrorReason_ROUTE_NOT_ACTUAL.String(), "")
-	ErrRouteInProcess     = errors.New(202, v1.ErrorReason_ROUTE_IN_PROCESS.String(), "")
+	LoginNotExistsError = errors.New(401, v1.ErrorReason_NOT_AUTHORIZED.String(), "")
+	ErrRouteNotActual   = errors.New(410, v1.ErrorReason_ROUTE_NOT_ACTUAL.String(), "")
+	ErrRouteInProcess   = errors.New(202, v1.ErrorReason_ROUTE_IN_PROCESS.String(), "")
 )
-
-type Route struct {
-	Id        uint64
-	Name      string
-	Load      float64
-	CargoType string
-	IsActual  bool
-}
 
 // GreeterRepo is a Greater repo.
 type GreeterRepo interface {
-	Create(ctx context.Context, router *Route) error
-	SetIsActual(ctx context.Context, id uint64, isActual bool) error
-	FindByID(ctx context.Context, id uint64) (*Route, error)
-	DeleteById(ctx context.Context, uid uint64) error
+	GetPasswordHash(ctx context.Context, login string) (uint64, string, error)
+	CreateSession(ctx context.Context, userId uint64) (string, error)
+	GetUserId(ctx context.Context, token string) (uint64, error)
+	DeleteAllSession(ctx context.Context, userId uint64) error
+	InsertAsset(ctx context.Context, userId uint64, assetName string, file []byte) error
+	GetAsset(ctx context.Context, assetName string) ([]byte, error)
 }
 
 // GreeterUsecase is a Greeter usecase.
@@ -51,59 +47,71 @@ func NewGreeterUsecase(repo GreeterRepo, logger log.Logger) *GreeterUsecase {
 	}
 }
 
-func (uc *GreeterUsecase) CreateRouter(ctx context.Context, req *v1.CreateRouteRequest) (*v1.CreateRouteReply, error) {
-	// Проверка входных данных
-	found := true
-	_, err := uc.repo.FindByID(ctx, req.RouteId)
+func (uc *GreeterUsecase) Login(ctx context.Context, req *v1.LoginRequest) (*v1.LoginReply, error) {
+	userId, passwordHash, err := uc.repo.GetPasswordHash(ctx, req.Login)
 	if err != nil {
 		if ent.IsNotFound(err) {
-			found = false
-		} else {
-			return nil, err
+			return nil, LoginNotExistsError
 		}
-	}
-	if found {
-		if err := uc.repo.SetIsActual(ctx, req.RouteId, false); err != nil {
-			return nil, err
-		}
-		req.RouteId = rand.Uint64()
-	}
-	if err := uc.repo.Create(ctx, &Route{
-		Id:        req.RouteId,
-		Name:      req.RouteName,
-		Load:      req.Load,
-		CargoType: req.CargoType,
-		IsActual:  true,
-	}); err != nil {
 		return nil, err
 	}
-	return &v1.CreateRouteReply{
-		RouteId:       req.RouteId,
-		RouteName:     req.RouteName,
-		Load:          req.Load,
-		CargoType:     req.CargoType,
-		AlreadyExists: found,
-	}, nil
-}
-
-func (uc *GreeterUsecase) GetRouter(ctx context.Context, req *v1.GetRouteRequest) (*v1.RouteReply, error) {
-	route, err := uc.repo.FindByID(ctx, req.RouteId)
+	hash := md5.New()
+	hash.Write([]byte(req.Password))
+	passwordHashIn := hex.EncodeToString(hash.Sum(nil))
+	if passwordHashIn != passwordHash {
+		return nil, LoginNotExistsError
+	}
+	token, err := uc.repo.CreateSession(ctx, userId)
 	if err != nil {
 		return nil, err
 	}
-	if !route.IsActual {
-		return nil, ErrRouteNotActual
-	}
-	return &v1.RouteReply{
-		RouteName: route.Name,
-		Load:      route.Load,
-		CargoType: route.CargoType,
+	return &v1.LoginReply{
+		Token: token,
 	}, nil
 }
 
-func (uc *GreeterUsecase) DeleteRoute(ctx context.Context, req *v1.DeleteRouteRequest) (*v1.Empty, error) {
-	if err := uc.repo.DeleteById(ctx, req.RouteId); err != nil {
+func getToken(ctx context.Context) (string, error) {
+	meta, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return "", LoginNotExistsError
+	}
+	auth := meta["authorization"][0]
+	if !strings.HasPrefix(auth, "Bearer ") {
+		return "", LoginNotExistsError
+	}
+	return auth[7:], nil
+}
+
+func (uc *GreeterUsecase) UploadAsset(ctx context.Context, req *v1.AssetRequest) (*v1.StatusReply, error) {
+	token, err := getToken(ctx)
+	if err != nil {
 		return nil, err
 	}
-	return &v1.Empty{}, nil
+	userId, err := uc.repo.GetUserId(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+	if err := uc.repo.InsertAsset(ctx, userId, req.AssetName, req.Data); err != nil {
+		return nil, err
+	}
+	return &v1.StatusReply{
+		Status: "ok",
+	}, nil
+}
+
+func (uc *GreeterUsecase) Get(ctx context.Context, req *v1.AssetRequest) (*v1.GetReply, error) {
+	token, err := getToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := uc.repo.GetUserId(ctx, token); err != nil {
+		return nil, err
+	}
+	data, err := uc.repo.GetAsset(ctx, req.AssetName)
+	if err != nil {
+		return nil, err
+	}
+	return &v1.GetReply{
+		Data: data,
+	}, nil
 }

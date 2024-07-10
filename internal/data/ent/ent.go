@@ -6,7 +6,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"helloworld/internal/data/ent/route"
+	"helloworld/internal/data/ent/asset"
+	"helloworld/internal/data/ent/session"
+	"helloworld/internal/data/ent/user"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -31,7 +33,9 @@ type OrderFunc func(*sql.Selector)
 // columnChecker returns a function indicates if the column exists in the given column.
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
-		route.Table: route.ValidColumn,
+		asset.Table:   asset.ValidColumn,
+		session.Table: session.ValidColumn,
+		user.Table:    user.ValidColumn,
 	}
 	check, ok := checks[table]
 	if !ok {

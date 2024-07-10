@@ -61,12 +61,14 @@ generate:
 	go get github.com/google/wire/cmd/wire@latest
 	go generate ./...
 
+ent:
+	@ent generate ./internal/data/ent/schema
 .PHONY: all
 # generate all
-all:
-	make api;
-	make config;
-	make generate;
+all: api config generate
+
+start-database:
+	docker compose up -d
 
 # show help
 help:

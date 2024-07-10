@@ -6,5 +6,11 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
-// Route is the predicate function for route builders.
-type Route func(*sql.Selector)
+// Asset is the predicate function for asset builders.
+type Asset func(*sql.Selector)
+
+// Session is the predicate function for session builders.
+type Session func(*sql.Selector)
+
+// User is the predicate function for user builders.
+type User func(*sql.Selector)

@@ -19,96 +19,96 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
-const OperationGreeterCreateRoute = "/helloworld.v1.Greeter/CreateRoute"
-const OperationGreeterDeleteRoute = "/helloworld.v1.Greeter/DeleteRoute"
-const OperationGreeterGetRoute = "/helloworld.v1.Greeter/GetRoute"
+const OperationGreeterGet = "/helloworld.v1.Greeter/Get"
+const OperationGreeterLogin = "/helloworld.v1.Greeter/Login"
+const OperationGreeterUploadAsset = "/helloworld.v1.Greeter/UploadAsset"
 
 type GreeterHTTPServer interface {
-	CreateRoute(context.Context, *CreateRouteRequest) (*CreateRouteReply, error)
-	DeleteRoute(context.Context, *DeleteRouteRequest) (*Empty, error)
-	GetRoute(context.Context, *GetRouteRequest) (*RouteReply, error)
+	Get(context.Context, *AssetRequest) (*GetReply, error)
+	Login(context.Context, *LoginRequest) (*LoginReply, error)
+	UploadAsset(context.Context, *AssetRequest) (*StatusReply, error)
 }
 
 func RegisterGreeterHTTPServer(s *http.Server, srv GreeterHTTPServer) {
 	r := s.Route("/")
-	r.POST("/route/register", _Greeter_CreateRoute0_HTTP_Handler(srv))
-	r.GET("/route/{route_id}", _Greeter_GetRoute0_HTTP_Handler(srv))
-	r.DELETE("/route/{route_id}", _Greeter_DeleteRoute0_HTTP_Handler(srv))
+	r.POST("/auth", _Greeter_Login0_HTTP_Handler(srv))
+	r.POST("/upload-asset/{asset_name}", _Greeter_UploadAsset0_HTTP_Handler(srv))
+	r.GET("/asset/{asset_name}", _Greeter_Get0_HTTP_Handler(srv))
 }
 
-func _Greeter_CreateRoute0_HTTP_Handler(srv GreeterHTTPServer) func(ctx http.Context) error {
+func _Greeter_Login0_HTTP_Handler(srv GreeterHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in CreateRouteRequest
+		var in LoginRequest
 		if err := ctx.Bind(&in); err != nil {
 			return err
 		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, OperationGreeterCreateRoute)
+		http.SetOperation(ctx, OperationGreeterLogin)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.CreateRoute(ctx, req.(*CreateRouteRequest))
+			return srv.Login(ctx, req.(*LoginRequest))
 		})
 		out, err := h(ctx, &in)
-		reply := out.(*CreateRouteReply)
 		if err != nil {
-			if reply.AlreadyExists {
-				return ctx.Result(208, reply)
-			}
 			return err
 		}
+		reply := out.(*LoginReply)
 		return ctx.Result(200, reply)
 	}
 }
 
-func _Greeter_GetRoute0_HTTP_Handler(srv GreeterHTTPServer) func(ctx http.Context) error {
+func _Greeter_UploadAsset0_HTTP_Handler(srv GreeterHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in GetRouteRequest
+		var in AssetRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
 		if err := ctx.BindVars(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, OperationGreeterGetRoute)
+		http.SetOperation(ctx, OperationGreeterUploadAsset)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.GetRoute(ctx, req.(*GetRouteRequest))
+			return srv.UploadAsset(ctx, req.(*AssetRequest))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
 			return err
 		}
-		reply := out.(*RouteReply)
+		reply := out.(*StatusReply)
 		return ctx.Result(200, reply)
 	}
 }
 
-func _Greeter_DeleteRoute0_HTTP_Handler(srv GreeterHTTPServer) func(ctx http.Context) error {
+func _Greeter_Get0_HTTP_Handler(srv GreeterHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in DeleteRouteRequest
+		var in AssetRequest
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
 		if err := ctx.BindVars(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, OperationGreeterDeleteRoute)
+		http.SetOperation(ctx, OperationGreeterGet)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.DeleteRoute(ctx, req.(*DeleteRouteRequest))
+			return srv.Get(ctx, req.(*AssetRequest))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
 			return err
 		}
-		reply := out.(*Empty)
-		return ctx.Result(202, reply)
+		reply := out.(*GetReply)
+		return ctx.Result(200, reply)
 	}
 }
 
 type GreeterHTTPClient interface {
-	CreateRoute(ctx context.Context, req *CreateRouteRequest, opts ...http.CallOption) (rsp *CreateRouteReply, err error)
-	DeleteRoute(ctx context.Context, req *DeleteRouteRequest, opts ...http.CallOption) (rsp *Empty, err error)
-	GetRoute(ctx context.Context, req *GetRouteRequest, opts ...http.CallOption) (rsp *RouteReply, err error)
+	Get(ctx context.Context, req *AssetRequest, opts ...http.CallOption) (rsp *GetReply, err error)
+	Login(ctx context.Context, req *LoginRequest, opts ...http.CallOption) (rsp *LoginReply, err error)
+	UploadAsset(ctx context.Context, req *AssetRequest, opts ...http.CallOption) (rsp *StatusReply, err error)
 }
 
 type GreeterHTTPClientImpl struct {
@@ -119,11 +119,24 @@ func NewGreeterHTTPClient(client *http.Client) GreeterHTTPClient {
 	return &GreeterHTTPClientImpl{client}
 }
 
-func (c *GreeterHTTPClientImpl) CreateRoute(ctx context.Context, in *CreateRouteRequest, opts ...http.CallOption) (*CreateRouteReply, error) {
-	var out CreateRouteReply
-	pattern := "/route/register"
+func (c *GreeterHTTPClientImpl) Get(ctx context.Context, in *AssetRequest, opts ...http.CallOption) (*GetReply, error) {
+	var out GetReply
+	pattern := "/asset/{asset_name}"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationGreeterGet))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *GreeterHTTPClientImpl) Login(ctx context.Context, in *LoginRequest, opts ...http.CallOption) (*LoginReply, error) {
+	var out LoginReply
+	pattern := "/auth"
 	path := binding.EncodeURL(pattern, in, false)
-	opts = append(opts, http.Operation(OperationGreeterCreateRoute))
+	opts = append(opts, http.Operation(OperationGreeterLogin))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
@@ -132,26 +145,13 @@ func (c *GreeterHTTPClientImpl) CreateRoute(ctx context.Context, in *CreateRoute
 	return &out, err
 }
 
-func (c *GreeterHTTPClientImpl) DeleteRoute(ctx context.Context, in *DeleteRouteRequest, opts ...http.CallOption) (*Empty, error) {
-	var out Empty
-	pattern := "/route/{route_id}"
-	path := binding.EncodeURL(pattern, in, true)
-	opts = append(opts, http.Operation(OperationGreeterDeleteRoute))
+func (c *GreeterHTTPClientImpl) UploadAsset(ctx context.Context, in *AssetRequest, opts ...http.CallOption) (*StatusReply, error) {
+	var out StatusReply
+	pattern := "/upload-asset/{asset_name}"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationGreeterUploadAsset))
 	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &out, err
-}
-
-func (c *GreeterHTTPClientImpl) GetRoute(ctx context.Context, in *GetRouteRequest, opts ...http.CallOption) (*RouteReply, error) {
-	var out RouteReply
-	pattern := "/route/{route_id}"
-	path := binding.EncodeURL(pattern, in, true)
-	opts = append(opts, http.Operation(OperationGreeterGetRoute))
-	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

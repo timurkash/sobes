@@ -4,7 +4,8 @@ import (
 	"context"
 	"helloworld/internal/conf"
 	"helloworld/internal/data/ent"
-	"helloworld/internal/data/ent/migrate"
+	"helloworld/internal/data/ent/session"
+	"helloworld/internal/data/ent/user"
 
 	"helloworld/internal/biz"
 )
@@ -21,16 +22,17 @@ func NewGreeterRepo(confData *conf.Data, data *Data) (biz.GreeterRepo, func(), e
 		return nil, nil, err
 	}
 	entClient := ent.NewClient(ent.Driver(DebugWithContext(driver, data.log)))
-	if err := entClient.Schema.Create(
-		context.Background(),
-		migrate.WithDropIndex(true),
-		migrate.WithDropColumn(true),
-	); err != nil {
-		data.log.Errorf("failed creating schema resources: %v", err)
-		return nil, nil, err
-	}
+	//if err := entClient.Schema.Create(
+	//	context.Background(),
+	//	migrate.WithDropIndex(true),
+	//	migrate.WithDropColumn(true),
+	//); err != nil {
+	//	data.log.Errorf("failed creating schema resources: %v", err)
+	//	return nil, nil, err
+	//}
 	return &greeterRepo{
-			data: data,
+			data:       data,
+			relational: entClient,
 		}, func() {
 			data.log.Info("closing the data resources")
 			if err := entClient.Close(); err != nil {
@@ -39,39 +41,41 @@ func NewGreeterRepo(confData *conf.Data, data *Data) (biz.GreeterRepo, func(), e
 		}, nil
 }
 
-func (r *greeterRepo) Create(ctx context.Context, route *biz.Route) error {
-	_, err := r.relational.Route.Create().
-		SetID(route.Id).
-		SetRouteName(route.Name).
-		SetLoad(route.Load).
-		SetCargoType(route.CargoType).
-		SetIsActual(route.IsActual).
-		Save(ctx)
-	return err
-}
-
-func (r *greeterRepo) FindByID(ctx context.Context, id uint64) (*biz.Route, error) {
-	record, err := r.relational.Route.Get(ctx, id)
+func (r *greeterRepo) GetPasswordHash(ctx context.Context, login string) (uint64, string, error) {
+	record, err := r.relational.User.Query().Where(user.Login(login)).Only(ctx)
 	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil, nil
-		}
-		return nil, err
+		return 0, "", err
 	}
-	return &biz.Route{
-		Id:        id,
-		Name:      record.RouteName,
-		Load:      record.Load,
-		CargoType: record.CargoType,
-		IsActual:  record.IsActual,
-	}, nil
+	return record.ID, record.PasswordHash, nil
 }
 
-func (r *greeterRepo) SetIsActual(ctx context.Context, id uint64, isActual bool) error {
-	_, err := r.relational.Route.UpdateOneID(id).SetIsActual(isActual).Save(ctx)
+func (r *greeterRepo) CreateSession(ctx context.Context, userId uint64) (string, error) {
+	record, err := r.relational.Session.Create().SetUID(userId).Save(ctx)
+	if err != nil {
+		return "", err
+	}
+	return record.ID, nil
+}
+
+func (r *greeterRepo) GetUserId(ctx context.Context, token string) (uint64, error) {
+	record, err := r.relational.Session.Get(ctx, token)
+	if err != nil {
+		return 0, nil
+	}
+	return record.UID, nil
+}
+
+func (r *greeterRepo) DeleteAllSession(ctx context.Context, userId uint64) error {
+	_, err := r.relational.Session.Delete().Where(session.UID(userId)).Exec(ctx)
 	return err
 }
 
-func (r *greeterRepo) DeleteById(ctx context.Context, id uint64) error {
-	return r.relational.Route.DeleteOneID(id).Exec(ctx)
+func (r *greeterRepo) InsertAsset(ctx context.Context, userId uint64, assetName string, file []byte) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (r *greeterRepo) GetAsset(ctx context.Context, assetName string) ([]byte, error) {
+	//TODO implement me
+	panic("implement me")
 }

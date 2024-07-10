@@ -23,14 +23,14 @@ func NewGreeterService(uc *biz.GreeterUsecase) *GreeterService {
 	return &GreeterService{uc: uc}
 }
 
-func (s *GreeterService) CreateRoute(ctx context.Context, req *v1.CreateRouteRequest) (*v1.CreateRouteReply, error) {
-	return s.uc.CreateRouter(ctx, req)
+func (s *GreeterService) Login(ctx context.Context, req *v1.LoginRequest) (*v1.LoginReply, error) {
+	return s.uc.Login(ctx, req)
 }
 
-func (s *GreeterService) GetRoute(ctx context.Context, req *v1.GetRouteRequest) (*v1.RouteReply, error) {
-	return s.uc.GetRouter(ctx, req)
+func (s *GreeterService) UploadAsset(ctx context.Context, req *v1.AssetRequest) (*v1.StatusReply, error) {
+	return s.uc.UploadAsset(ctx, req)
 }
 
-func (s *GreeterService) DeleteRoute(ctx context.Context, req *v1.DeleteRouteRequest) (*v1.Empty, error) {
-	return s.uc.DeleteRoute(ctx, req)
+func (s *GreeterService) Get(ctx context.Context, req *v1.AssetRequest) (*v1.GetReply, error) {
+	return s.uc.Get(ctx, req)
 }

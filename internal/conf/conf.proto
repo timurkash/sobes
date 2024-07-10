@@ -33,7 +33,6 @@ message Relational {
   string schema = 7;
   string ssl_mode = 8;
   string additional = 9;
-  string ca_certificate = 10;
 }
 message Data {
   Relational relational = 1;

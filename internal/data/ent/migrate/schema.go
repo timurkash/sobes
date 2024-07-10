@@ -8,23 +8,49 @@ import (
 )
 
 var (
-	// RoutesColumns holds the columns for the "routes" table.
-	RoutesColumns = []*schema.Column{
-		{Name: "route_id", Type: field.TypeUint64, Increment: true},
-		{Name: "route_name", Type: field.TypeString},
-		{Name: "load", Type: field.TypeFloat64},
-		{Name: "cargo_type", Type: field.TypeString},
-		{Name: "is_actual", Type: field.TypeBool, Default: false},
+	// AssetsColumns holds the columns for the "assets" table.
+	AssetsColumns = []*schema.Column{
+		{Name: "uid", Type: field.TypeUint64, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "data", Type: field.TypeBytes},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
 	}
-	// RoutesTable holds the schema information for the "routes" table.
-	RoutesTable = &schema.Table{
-		Name:       "routes",
-		Columns:    RoutesColumns,
-		PrimaryKey: []*schema.Column{RoutesColumns[0]},
+	// AssetsTable holds the schema information for the "assets" table.
+	AssetsTable = &schema.Table{
+		Name:       "assets",
+		Columns:    AssetsColumns,
+		PrimaryKey: []*schema.Column{AssetsColumns[0]},
+	}
+	// SessionsColumns holds the columns for the "sessions" table.
+	SessionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "uid", Type: field.TypeUint64, Unique: true},
+	}
+	// SessionsTable holds the schema information for the "sessions" table.
+	SessionsTable = &schema.Table{
+		Name:       "sessions",
+		Columns:    SessionsColumns,
+		PrimaryKey: []*schema.Column{SessionsColumns[0]},
+	}
+	// UsersColumns holds the columns for the "users" table.
+	UsersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "login", Type: field.TypeString, Unique: true},
+		{Name: "password_hash", Type: field.TypeString, Size: 32},
+	}
+	// UsersTable holds the schema information for the "users" table.
+	UsersTable = &schema.Table{
+		Name:       "users",
+		Columns:    UsersColumns,
+		PrimaryKey: []*schema.Column{UsersColumns[0]},
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
-		RoutesTable,
+		AssetsTable,
+		SessionsTable,
+		UsersTable,
 	}
 )
 

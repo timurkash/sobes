@@ -8,7 +8,7 @@ option java_package = "helloworld.v1";
 option objc_class_prefix = "APIHelloworldV1";
 
 enum ErrorReason {
-  ROUTE_ALREADY_EXISTS = 0;
+  NOT_AUTHORIZED = 0;
   ROUTE_NOT_ACTUAL = 1;
   ROUTE_IN_PROCESS = 2;
 }

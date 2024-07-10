@@ -5,53 +5,53 @@ package ent
 import (
 	"context"
 	"fmt"
+	"helloworld/internal/data/ent/asset"
 	"helloworld/internal/data/ent/predicate"
-	"helloworld/internal/data/ent/route"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
 
-// RouteDelete is the builder for deleting a Route entity.
-type RouteDelete struct {
+// AssetDelete is the builder for deleting a Asset entity.
+type AssetDelete struct {
 	config
 	hooks    []Hook
-	mutation *RouteMutation
+	mutation *AssetMutation
 }
 
-// Where appends a list predicates to the RouteDelete builder.
-func (rd *RouteDelete) Where(ps ...predicate.Route) *RouteDelete {
-	rd.mutation.Where(ps...)
-	return rd
+// Where appends a list predicates to the AssetDelete builder.
+func (ad *AssetDelete) Where(ps ...predicate.Asset) *AssetDelete {
+	ad.mutation.Where(ps...)
+	return ad
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (rd *RouteDelete) Exec(ctx context.Context) (int, error) {
+func (ad *AssetDelete) Exec(ctx context.Context) (int, error) {
 	var (
 		err      error
 		affected int
 	)
-	if len(rd.hooks) == 0 {
-		affected, err = rd.sqlExec(ctx)
+	if len(ad.hooks) == 0 {
+		affected, err = ad.sqlExec(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*RouteMutation)
+			mutation, ok := m.(*AssetMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
 			}
-			rd.mutation = mutation
-			affected, err = rd.sqlExec(ctx)
+			ad.mutation = mutation
+			affected, err = ad.sqlExec(ctx)
 			mutation.done = true
 			return affected, err
 		})
-		for i := len(rd.hooks) - 1; i >= 0; i-- {
-			if rd.hooks[i] == nil {
+		for i := len(ad.hooks) - 1; i >= 0; i-- {
+			if ad.hooks[i] == nil {
 				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
 			}
-			mut = rd.hooks[i](mut)
+			mut = ad.hooks[i](mut)
 		}
-		if _, err := mut.Mutate(ctx, rd.mutation); err != nil {
+		if _, err := mut.Mutate(ctx, ad.mutation); err != nil {
 			return 0, err
 		}
 	}
@@ -59,57 +59,57 @@ func (rd *RouteDelete) Exec(ctx context.Context) (int, error) {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (rd *RouteDelete) ExecX(ctx context.Context) int {
-	n, err := rd.Exec(ctx)
+func (ad *AssetDelete) ExecX(ctx context.Context) int {
+	n, err := ad.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (rd *RouteDelete) sqlExec(ctx context.Context) (int, error) {
+func (ad *AssetDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := &sqlgraph.DeleteSpec{
 		Node: &sqlgraph.NodeSpec{
-			Table: route.Table,
+			Table: asset.Table,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeUint64,
-				Column: route.FieldID,
+				Column: asset.FieldID,
 			},
 		},
 	}
-	if ps := rd.mutation.predicates; len(ps) > 0 {
+	if ps := ad.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, rd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, ad.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
 	return affected, err
 }
 
-// RouteDeleteOne is the builder for deleting a single Route entity.
-type RouteDeleteOne struct {
-	rd *RouteDelete
+// AssetDeleteOne is the builder for deleting a single Asset entity.
+type AssetDeleteOne struct {
+	ad *AssetDelete
 }
 
 // Exec executes the deletion query.
-func (rdo *RouteDeleteOne) Exec(ctx context.Context) error {
-	n, err := rdo.rd.Exec(ctx)
+func (ado *AssetDeleteOne) Exec(ctx context.Context) error {
+	n, err := ado.ad.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
 	case n == 0:
-		return &NotFoundError{route.Label}
+		return &NotFoundError{asset.Label}
 	default:
 		return nil
 	}
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (rdo *RouteDeleteOne) ExecX(ctx context.Context) {
-	rdo.rd.ExecX(ctx)
+func (ado *AssetDeleteOne) ExecX(ctx context.Context) {
+	ado.ad.ExecX(ctx)
 }

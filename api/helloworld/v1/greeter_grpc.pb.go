@@ -19,18 +19,18 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Greeter_CreateRoute_FullMethodName = "/helloworld.v1.Greeter/CreateRoute"
-	Greeter_GetRoute_FullMethodName    = "/helloworld.v1.Greeter/GetRoute"
-	Greeter_DeleteRoute_FullMethodName = "/helloworld.v1.Greeter/DeleteRoute"
+	Greeter_Login_FullMethodName       = "/helloworld.v1.Greeter/Login"
+	Greeter_UploadAsset_FullMethodName = "/helloworld.v1.Greeter/UploadAsset"
+	Greeter_Get_FullMethodName         = "/helloworld.v1.Greeter/Get"
 )
 
 // GreeterClient is the client API for Greeter service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type GreeterClient interface {
-	CreateRoute(ctx context.Context, in *CreateRouteRequest, opts ...grpc.CallOption) (*CreateRouteReply, error)
-	GetRoute(ctx context.Context, in *GetRouteRequest, opts ...grpc.CallOption) (*RouteReply, error)
-	DeleteRoute(ctx context.Context, in *DeleteRouteRequest, opts ...grpc.CallOption) (*Empty, error)
+	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginReply, error)
+	UploadAsset(ctx context.Context, in *AssetRequest, opts ...grpc.CallOption) (*StatusReply, error)
+	Get(ctx context.Context, in *AssetRequest, opts ...grpc.CallOption) (*GetReply, error)
 }
 
 type greeterClient struct {
@@ -41,27 +41,27 @@ func NewGreeterClient(cc grpc.ClientConnInterface) GreeterClient {
 	return &greeterClient{cc}
 }
 
-func (c *greeterClient) CreateRoute(ctx context.Context, in *CreateRouteRequest, opts ...grpc.CallOption) (*CreateRouteReply, error) {
-	out := new(CreateRouteReply)
-	err := c.cc.Invoke(ctx, Greeter_CreateRoute_FullMethodName, in, out, opts...)
+func (c *greeterClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginReply, error) {
+	out := new(LoginReply)
+	err := c.cc.Invoke(ctx, Greeter_Login_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *greeterClient) GetRoute(ctx context.Context, in *GetRouteRequest, opts ...grpc.CallOption) (*RouteReply, error) {
-	out := new(RouteReply)
-	err := c.cc.Invoke(ctx, Greeter_GetRoute_FullMethodName, in, out, opts...)
+func (c *greeterClient) UploadAsset(ctx context.Context, in *AssetRequest, opts ...grpc.CallOption) (*StatusReply, error) {
+	out := new(StatusReply)
+	err := c.cc.Invoke(ctx, Greeter_UploadAsset_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *greeterClient) DeleteRoute(ctx context.Context, in *DeleteRouteRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, Greeter_DeleteRoute_FullMethodName, in, out, opts...)
+func (c *greeterClient) Get(ctx context.Context, in *AssetRequest, opts ...grpc.CallOption) (*GetReply, error) {
+	out := new(GetReply)
+	err := c.cc.Invoke(ctx, Greeter_Get_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -72,9 +72,9 @@ func (c *greeterClient) DeleteRoute(ctx context.Context, in *DeleteRouteRequest,
 // All implementations must embed UnimplementedGreeterServer
 // for forward compatibility
 type GreeterServer interface {
-	CreateRoute(context.Context, *CreateRouteRequest) (*CreateRouteReply, error)
-	GetRoute(context.Context, *GetRouteRequest) (*RouteReply, error)
-	DeleteRoute(context.Context, *DeleteRouteRequest) (*Empty, error)
+	Login(context.Context, *LoginRequest) (*LoginReply, error)
+	UploadAsset(context.Context, *AssetRequest) (*StatusReply, error)
+	Get(context.Context, *AssetRequest) (*GetReply, error)
 	mustEmbedUnimplementedGreeterServer()
 }
 
@@ -82,14 +82,14 @@ type GreeterServer interface {
 type UnimplementedGreeterServer struct {
 }
 
-func (UnimplementedGreeterServer) CreateRoute(context.Context, *CreateRouteRequest) (*CreateRouteReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateRoute not implemented")
+func (UnimplementedGreeterServer) Login(context.Context, *LoginRequest) (*LoginReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
-func (UnimplementedGreeterServer) GetRoute(context.Context, *GetRouteRequest) (*RouteReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetRoute not implemented")
+func (UnimplementedGreeterServer) UploadAsset(context.Context, *AssetRequest) (*StatusReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UploadAsset not implemented")
 }
-func (UnimplementedGreeterServer) DeleteRoute(context.Context, *DeleteRouteRequest) (*Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteRoute not implemented")
+func (UnimplementedGreeterServer) Get(context.Context, *AssetRequest) (*GetReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
 }
 func (UnimplementedGreeterServer) mustEmbedUnimplementedGreeterServer() {}
 
@@ -104,56 +104,56 @@ func RegisterGreeterServer(s grpc.ServiceRegistrar, srv GreeterServer) {
 	s.RegisterService(&Greeter_ServiceDesc, srv)
 }
 
-func _Greeter_CreateRoute_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateRouteRequest)
+func _Greeter_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LoginRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(GreeterServer).CreateRoute(ctx, in)
+		return srv.(GreeterServer).Login(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Greeter_CreateRoute_FullMethodName,
+		FullMethod: Greeter_Login_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GreeterServer).CreateRoute(ctx, req.(*CreateRouteRequest))
+		return srv.(GreeterServer).Login(ctx, req.(*LoginRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Greeter_GetRoute_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetRouteRequest)
+func _Greeter_UploadAsset_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AssetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(GreeterServer).GetRoute(ctx, in)
+		return srv.(GreeterServer).UploadAsset(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Greeter_GetRoute_FullMethodName,
+		FullMethod: Greeter_UploadAsset_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GreeterServer).GetRoute(ctx, req.(*GetRouteRequest))
+		return srv.(GreeterServer).UploadAsset(ctx, req.(*AssetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Greeter_DeleteRoute_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteRouteRequest)
+func _Greeter_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AssetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(GreeterServer).DeleteRoute(ctx, in)
+		return srv.(GreeterServer).Get(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Greeter_DeleteRoute_FullMethodName,
+		FullMethod: Greeter_Get_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GreeterServer).DeleteRoute(ctx, req.(*DeleteRouteRequest))
+		return srv.(GreeterServer).Get(ctx, req.(*AssetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -166,16 +166,16 @@ var Greeter_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*GreeterServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "CreateRoute",
-			Handler:    _Greeter_CreateRoute_Handler,
+			MethodName: "Login",
+			Handler:    _Greeter_Login_Handler,
 		},
 		{
-			MethodName: "GetRoute",
-			Handler:    _Greeter_GetRoute_Handler,
+			MethodName: "UploadAsset",
+			Handler:    _Greeter_UploadAsset_Handler,
 		},
 		{
-			MethodName: "DeleteRoute",
-			Handler:    _Greeter_DeleteRoute_Handler,
+			MethodName: "Get",
+			Handler:    _Greeter_Get_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

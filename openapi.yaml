@@ -6,16 +6,39 @@ info:
     title: Greeter API
     version: 0.0.1
 paths:
-    /route/register:
+    /asset/{assetName}:
+        get:
+            tags:
+                - Greeter
+            operationId: Greeter_Get
+            parameters:
+                - name: assetName
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: data
+                  in: query
+                  schema:
+                    type: string
+                    format: bytes
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/helloworld.v1.GetReply'
+    /auth:
         post:
             tags:
                 - Greeter
-            operationId: Greeter_CreateRoute
+            operationId: Greeter_Login
             requestBody:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/helloworld.v1.CreateRouteRequest'
+                            $ref: '#/components/schemas/helloworld.v1.LoginRequest'
                 required: true
             responses:
                 "200":
@@ -23,86 +46,63 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/helloworld.v1.CreateRouteReply'
-    /route/{routeId}:
-        get:
+                                $ref: '#/components/schemas/helloworld.v1.LoginReply'
+    /upload-asset/{assetName}:
+        post:
             tags:
                 - Greeter
-            operationId: Greeter_GetRoute
+            operationId: Greeter_UploadAsset
             parameters:
-                - name: routeId
+                - name: assetName
                   in: path
                   required: true
                   schema:
-                    type: integer
-                    format: uint64
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/helloworld.v1.AssetRequest'
+                required: true
             responses:
                 "200":
                     description: OK
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/helloworld.v1.RouteReply'
-        delete:
-            tags:
-                - Greeter
-            operationId: Greeter_DeleteRoute
-            parameters:
-                - name: routeId
-                  in: path
-                  required: true
-                  schema:
-                    type: integer
-                    format: uint64
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/helloworld.v1.Empty'
+                                $ref: '#/components/schemas/helloworld.v1.StatusReply'
 components:
     schemas:
-        helloworld.v1.CreateRouteReply:
+        helloworld.v1.AssetRequest:
             type: object
             properties:
-                routeId:
-                    type: integer
-                    format: uint64
-                routeName:
+                assetName:
                     type: string
-                load:
-                    type: number
-                    format: double
-                cargoType:
+                data:
                     type: string
-                alreadyExists:
-                    type: boolean
-        helloworld.v1.CreateRouteRequest:
+                    format: bytes
+        helloworld.v1.GetReply:
             type: object
             properties:
-                routeId:
-                    type: integer
-                    format: uint64
-                routeName:
+                data:
                     type: string
-                load:
-                    type: number
-                    format: double
-                cargoType:
-                    type: string
-        helloworld.v1.Empty:
-            type: object
-            properties: {}
-        helloworld.v1.RouteReply:
+                    format: bytes
+        helloworld.v1.LoginReply:
             type: object
             properties:
-                routeName:
+                token:
                     type: string
-                load:
-                    type: number
-                    format: double
-                cargoType:
+        helloworld.v1.LoginRequest:
+            type: object
+            properties:
+                login:
+                    type: string
+                password:
+                    type: string
+        helloworld.v1.StatusReply:
+            type: object
+            properties:
+                status:
                     type: string
 tags:
     - name: Greeter
