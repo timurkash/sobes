@@ -19,18 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Greeter_Login_FullMethodName       = "/helloworld.v1.Greeter/Login"
-	Greeter_UploadAsset_FullMethodName = "/helloworld.v1.Greeter/UploadAsset"
-	Greeter_Get_FullMethodName         = "/helloworld.v1.Greeter/Get"
+	Greeter_CreateOrder_FullMethodName = "/helloworld.v1.Greeter/CreateOrder"
 )
 
 // GreeterClient is the client API for Greeter service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type GreeterClient interface {
-	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginReply, error)
-	UploadAsset(ctx context.Context, in *AssetRequest, opts ...grpc.CallOption) (*StatusReply, error)
-	Get(ctx context.Context, in *AssetRequest, opts ...grpc.CallOption) (*GetReply, error)
+	CreateOrder(ctx context.Context, in *CreateOrderRequest, opts ...grpc.CallOption) (*CreateOrderReply, error)
 }
 
 type greeterClient struct {
@@ -41,27 +37,9 @@ func NewGreeterClient(cc grpc.ClientConnInterface) GreeterClient {
 	return &greeterClient{cc}
 }
 
-func (c *greeterClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginReply, error) {
-	out := new(LoginReply)
-	err := c.cc.Invoke(ctx, Greeter_Login_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *greeterClient) UploadAsset(ctx context.Context, in *AssetRequest, opts ...grpc.CallOption) (*StatusReply, error) {
-	out := new(StatusReply)
-	err := c.cc.Invoke(ctx, Greeter_UploadAsset_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *greeterClient) Get(ctx context.Context, in *AssetRequest, opts ...grpc.CallOption) (*GetReply, error) {
-	out := new(GetReply)
-	err := c.cc.Invoke(ctx, Greeter_Get_FullMethodName, in, out, opts...)
+func (c *greeterClient) CreateOrder(ctx context.Context, in *CreateOrderRequest, opts ...grpc.CallOption) (*CreateOrderReply, error) {
+	out := new(CreateOrderReply)
+	err := c.cc.Invoke(ctx, Greeter_CreateOrder_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -72,9 +50,7 @@ func (c *greeterClient) Get(ctx context.Context, in *AssetRequest, opts ...grpc.
 // All implementations must embed UnimplementedGreeterServer
 // for forward compatibility
 type GreeterServer interface {
-	Login(context.Context, *LoginRequest) (*LoginReply, error)
-	UploadAsset(context.Context, *AssetRequest) (*StatusReply, error)
-	Get(context.Context, *AssetRequest) (*GetReply, error)
+	CreateOrder(context.Context, *CreateOrderRequest) (*CreateOrderReply, error)
 	mustEmbedUnimplementedGreeterServer()
 }
 
@@ -82,14 +58,8 @@ type GreeterServer interface {
 type UnimplementedGreeterServer struct {
 }
 
-func (UnimplementedGreeterServer) Login(context.Context, *LoginRequest) (*LoginReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
-}
-func (UnimplementedGreeterServer) UploadAsset(context.Context, *AssetRequest) (*StatusReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UploadAsset not implemented")
-}
-func (UnimplementedGreeterServer) Get(context.Context, *AssetRequest) (*GetReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
+func (UnimplementedGreeterServer) CreateOrder(context.Context, *CreateOrderRequest) (*CreateOrderReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateOrder not implemented")
 }
 func (UnimplementedGreeterServer) mustEmbedUnimplementedGreeterServer() {}
 
@@ -104,56 +74,20 @@ func RegisterGreeterServer(s grpc.ServiceRegistrar, srv GreeterServer) {
 	s.RegisterService(&Greeter_ServiceDesc, srv)
 }
 
-func _Greeter_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LoginRequest)
+func _Greeter_CreateOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateOrderRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(GreeterServer).Login(ctx, in)
+		return srv.(GreeterServer).CreateOrder(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Greeter_Login_FullMethodName,
+		FullMethod: Greeter_CreateOrder_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GreeterServer).Login(ctx, req.(*LoginRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Greeter_UploadAsset_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AssetRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(GreeterServer).UploadAsset(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Greeter_UploadAsset_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GreeterServer).UploadAsset(ctx, req.(*AssetRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Greeter_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AssetRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(GreeterServer).Get(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Greeter_Get_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GreeterServer).Get(ctx, req.(*AssetRequest))
+		return srv.(GreeterServer).CreateOrder(ctx, req.(*CreateOrderRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -166,16 +100,8 @@ var Greeter_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*GreeterServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Login",
-			Handler:    _Greeter_Login_Handler,
-		},
-		{
-			MethodName: "UploadAsset",
-			Handler:    _Greeter_UploadAsset_Handler,
-		},
-		{
-			MethodName: "Get",
-			Handler:    _Greeter_Get_Handler,
+			MethodName: "CreateOrder",
+			Handler:    _Greeter_CreateOrder_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

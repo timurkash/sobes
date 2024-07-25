@@ -4,6 +4,7 @@ package kratos.api;
 option go_package = "helloworld/internal/conf;conf";
 
 import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
 
 message Bootstrap {
   Server server = 1;
@@ -23,17 +24,15 @@ message Server {
   HTTP http = 1;
   GRPC grpc = 2;
 }
-message Relational {
-  string dialect = 1;
-  string host = 2;
-  int32 port = 3;
-  string user = 4;
-  string password = 5;
-  string dbname = 6;
-  string schema = 7;
-  string ssl_mode = 8;
-  string additional = 9;
-}
 message Data {
-  Relational relational = 1;
+  RoomAvailability room_availability = 1;
+}
+message RoomAvailability {
+  repeated Room rooms = 1;
+}
+message Room {
+  string hotel_id = 1;
+  string room_id = 2;
+  google.protobuf.Timestamp date = 3;
+  uint32 quota = 4;
 }

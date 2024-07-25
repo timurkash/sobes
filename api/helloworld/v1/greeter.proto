@@ -3,6 +3,7 @@ syntax = "proto3";
 package helloworld.v1;
 
 import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
 
 option go_package = "helloworld/api/helloworld/v1;v1";
 //option java_multiple_files = true;
@@ -10,39 +11,20 @@ option go_package = "helloworld/api/helloworld/v1;v1";
 //option java_outer_classname = "HelloworldProtoV1";
 
 service Greeter {
-  rpc Login (LoginRequest) returns (LoginReply) {
+  rpc CreateOrder (CreateOrderRequest) returns (CreateOrderReply) {
     option (google.api.http) = {
-      post: "/auth"
+      post: "/orders"
       body: "*"
-    };
-  }
-  rpc UploadAsset (AssetRequest) returns (StatusReply) {
-    option (google.api.http) = {
-      post: "/upload-asset/{asset_name}"
-      body: "*"
-    };
-  }
-  rpc Get (AssetRequest) returns (GetReply) {
-    option (google.api.http) = {
-      get: "/asset/{asset_name}"
     };
   }
 }
 
-message LoginRequest {
-  string login = 1;
-  string password = 2;
+message CreateOrderRequest {
+  string hotel_id = 1 [json_name = "hotel_id"];
+  string room_id = 2 [json_name = "room_id"];
+  string user_email = 3 [json_name = "email"];
+  google.protobuf.Timestamp from = 4;
+  google.protobuf.Timestamp to = 5;
 }
-message LoginReply {
-  string token = 1;
-}
-message AssetRequest {
-  string asset_name = 1;
-  bytes data = 2;
-}
-message StatusReply {
-  string status = 1;
-}
-message GetReply {
-  bytes data = 1;
+message CreateOrderReply {
 }

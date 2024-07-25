@@ -19,96 +19,41 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
-const OperationGreeterGet = "/helloworld.v1.Greeter/Get"
-const OperationGreeterLogin = "/helloworld.v1.Greeter/Login"
-const OperationGreeterUploadAsset = "/helloworld.v1.Greeter/UploadAsset"
+const OperationGreeterCreateOrder = "/helloworld.v1.Greeter/CreateOrder"
 
 type GreeterHTTPServer interface {
-	Get(context.Context, *AssetRequest) (*GetReply, error)
-	Login(context.Context, *LoginRequest) (*LoginReply, error)
-	UploadAsset(context.Context, *AssetRequest) (*StatusReply, error)
+	CreateOrder(context.Context, *CreateOrderRequest) (*CreateOrderReply, error)
 }
 
 func RegisterGreeterHTTPServer(s *http.Server, srv GreeterHTTPServer) {
 	r := s.Route("/")
-	r.POST("/auth", _Greeter_Login0_HTTP_Handler(srv))
-	r.POST("/upload-asset/{asset_name}", _Greeter_UploadAsset0_HTTP_Handler(srv))
-	r.GET("/asset/{asset_name}", _Greeter_Get0_HTTP_Handler(srv))
+	r.POST("/orders", _Greeter_CreateOrder0_HTTP_Handler(srv))
 }
 
-func _Greeter_Login0_HTTP_Handler(srv GreeterHTTPServer) func(ctx http.Context) error {
+func _Greeter_CreateOrder0_HTTP_Handler(srv GreeterHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in LoginRequest
+		var in CreateOrderRequest
 		if err := ctx.Bind(&in); err != nil {
 			return err
 		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, OperationGreeterLogin)
+		http.SetOperation(ctx, OperationGreeterCreateOrder)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.Login(ctx, req.(*LoginRequest))
+			return srv.CreateOrder(ctx, req.(*CreateOrderRequest))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
 			return err
 		}
-		reply := out.(*LoginReply)
-		return ctx.Result(200, reply)
-	}
-}
-
-func _Greeter_UploadAsset0_HTTP_Handler(srv GreeterHTTPServer) func(ctx http.Context) error {
-	return func(ctx http.Context) error {
-		var in AssetRequest
-		if err := ctx.Bind(&in); err != nil {
-			return err
-		}
-		if err := ctx.BindQuery(&in); err != nil {
-			return err
-		}
-		if err := ctx.BindVars(&in); err != nil {
-			return err
-		}
-		http.SetOperation(ctx, OperationGreeterUploadAsset)
-		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.UploadAsset(ctx, req.(*AssetRequest))
-		})
-		out, err := h(ctx, &in)
-		if err != nil {
-			return err
-		}
-		reply := out.(*StatusReply)
-		return ctx.Result(200, reply)
-	}
-}
-
-func _Greeter_Get0_HTTP_Handler(srv GreeterHTTPServer) func(ctx http.Context) error {
-	return func(ctx http.Context) error {
-		var in AssetRequest
-		if err := ctx.BindQuery(&in); err != nil {
-			return err
-		}
-		if err := ctx.BindVars(&in); err != nil {
-			return err
-		}
-		http.SetOperation(ctx, OperationGreeterGet)
-		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.Get(ctx, req.(*AssetRequest))
-		})
-		out, err := h(ctx, &in)
-		if err != nil {
-			return err
-		}
-		reply := out.(*GetReply)
+		reply := out.(*CreateOrderReply)
 		return ctx.Result(200, reply)
 	}
 }
 
 type GreeterHTTPClient interface {
-	Get(ctx context.Context, req *AssetRequest, opts ...http.CallOption) (rsp *GetReply, err error)
-	Login(ctx context.Context, req *LoginRequest, opts ...http.CallOption) (rsp *LoginReply, err error)
-	UploadAsset(ctx context.Context, req *AssetRequest, opts ...http.CallOption) (rsp *StatusReply, err error)
+	CreateOrder(ctx context.Context, req *CreateOrderRequest, opts ...http.CallOption) (rsp *CreateOrderReply, err error)
 }
 
 type GreeterHTTPClientImpl struct {
@@ -119,37 +64,11 @@ func NewGreeterHTTPClient(client *http.Client) GreeterHTTPClient {
 	return &GreeterHTTPClientImpl{client}
 }
 
-func (c *GreeterHTTPClientImpl) Get(ctx context.Context, in *AssetRequest, opts ...http.CallOption) (*GetReply, error) {
-	var out GetReply
-	pattern := "/asset/{asset_name}"
-	path := binding.EncodeURL(pattern, in, true)
-	opts = append(opts, http.Operation(OperationGreeterGet))
-	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &out, err
-}
-
-func (c *GreeterHTTPClientImpl) Login(ctx context.Context, in *LoginRequest, opts ...http.CallOption) (*LoginReply, error) {
-	var out LoginReply
-	pattern := "/auth"
+func (c *GreeterHTTPClientImpl) CreateOrder(ctx context.Context, in *CreateOrderRequest, opts ...http.CallOption) (*CreateOrderReply, error) {
+	var out CreateOrderReply
+	pattern := "/orders"
 	path := binding.EncodeURL(pattern, in, false)
-	opts = append(opts, http.Operation(OperationGreeterLogin))
-	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &out, err
-}
-
-func (c *GreeterHTTPClientImpl) UploadAsset(ctx context.Context, in *AssetRequest, opts ...http.CallOption) (*StatusReply, error) {
-	var out StatusReply
-	pattern := "/upload-asset/{asset_name}"
-	path := binding.EncodeURL(pattern, in, false)
-	opts = append(opts, http.Operation(OperationGreeterUploadAsset))
+	opts = append(opts, http.Operation(OperationGreeterCreateOrder))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {

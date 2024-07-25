@@ -6,39 +6,16 @@ info:
     title: Greeter API
     version: 0.0.1
 paths:
-    /asset/{assetName}:
-        get:
-            tags:
-                - Greeter
-            operationId: Greeter_Get
-            parameters:
-                - name: assetName
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: data
-                  in: query
-                  schema:
-                    type: string
-                    format: bytes
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/helloworld.v1.GetReply'
-    /auth:
+    /orders:
         post:
             tags:
                 - Greeter
-            operationId: Greeter_Login
+            operationId: Greeter_CreateOrder
             requestBody:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/helloworld.v1.LoginRequest'
+                            $ref: '#/components/schemas/helloworld.v1.CreateOrderRequest'
                 required: true
             responses:
                 "200":
@@ -46,63 +23,26 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/helloworld.v1.LoginReply'
-    /upload-asset/{assetName}:
-        post:
-            tags:
-                - Greeter
-            operationId: Greeter_UploadAsset
-            parameters:
-                - name: assetName
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/helloworld.v1.AssetRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/helloworld.v1.StatusReply'
+                                $ref: '#/components/schemas/helloworld.v1.CreateOrderReply'
 components:
     schemas:
-        helloworld.v1.AssetRequest:
+        helloworld.v1.CreateOrderReply:
+            type: object
+            properties: {}
+        helloworld.v1.CreateOrderRequest:
             type: object
             properties:
-                assetName:
+                hotel_id:
                     type: string
-                data:
+                room_id:
                     type: string
-                    format: bytes
-        helloworld.v1.GetReply:
-            type: object
-            properties:
-                data:
+                email:
                     type: string
-                    format: bytes
-        helloworld.v1.LoginReply:
-            type: object
-            properties:
-                token:
+                from:
                     type: string
-        helloworld.v1.LoginRequest:
-            type: object
-            properties:
-                login:
+                    format: date-time
+                to:
                     type: string
-                password:
-                    type: string
-        helloworld.v1.StatusReply:
-            type: object
-            properties:
-                status:
-                    type: string
+                    format: date-time
 tags:
     - name: Greeter

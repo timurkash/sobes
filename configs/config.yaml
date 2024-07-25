@@ -1,20 +1,29 @@
 server:
   http:
-    addr: 0.0.0.0:8000
-    timeout: 1s
+    addr: 0.0.0.0:8080
+    timeout: 3s
   grpc:
-    addr: 0.0.0.0:9000
-    timeout: 1s
+    addr: 0.0.0.0:9080
+    timeout: 3s
 data:
-  relational:
-    dialect: postgres
-    host: localhost
-    port: 5432
-    user: keycloak
-    password: keycloak
-    dbname: keycloak
-    ssl_mode: disable
-#  redis:
-#    addr: 127.0.0.1:6379
-#    read_timeout: 0.2s
-#    write_timeout: 0.2s
+  room_availability:
+    - hotel_id: redisson
+      room_id: lux
+      date: 2024-01-01
+      quota: 1
+    - hotel_id: redisson
+      room_id: lux
+      date: 2024-01-02
+      quota: 1
+    - hotel_id: redisson
+      room_id: lux
+      date: 2024-01-03
+      quota: 1
+    - hotel_id: redisson
+      room_id: lux
+      date: 2024-01-04
+      quota: 1
+    - hotel_id: redisson
+      room_id: lux
+      date: 2024-01-05
+      quota: 0
